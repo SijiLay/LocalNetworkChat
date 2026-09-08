@@ -1,6 +1,9 @@
 package server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -19,6 +22,13 @@ public class ChatServer {
             Socket clientSocket = serverSocket.accept();
 
             System.out.println("client connected");
+
+            InputStream in = clientSocket.getInputStream(); //ask for incoming data stream as raw bytes
+            InputStreamReader isr = new InputStreamReader(in); //turns those bytes to character
+            BufferedReader br = new BufferedReader(isr); //turns characters into a string for convenient reading of text
+
+            String message = br.readLine(); //returns full line as a string
+            System.out.println(message);
 
         } catch (IOException e) {
             System.out.println("Error:" +e.getMessage());
