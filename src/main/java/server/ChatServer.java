@@ -25,10 +25,14 @@ public class ChatServer {
 
             InputStream in = clientSocket.getInputStream(); //ask for incoming data stream as raw bytes
             InputStreamReader isr = new InputStreamReader(in); //turns those bytes to character
-            BufferedReader br = new BufferedReader(isr); //turns characters into a string for convenient reading of text
+            BufferedReader br = new BufferedReader(isr); //convenient reading of text
 
-            String message = br.readLine(); //returns full line as a string
-            System.out.println(message);
+
+            String message;
+
+            while ((message = br.readLine()) != null) {
+                System.out.println(message);
+            }
 
         } catch (IOException e) {
             System.out.println("Error:" +e.getMessage());
