@@ -33,6 +33,7 @@ public class ChatServer {
             while ((message = br.readLine()) != null) {
                 System.out.println(message);
             }
+            System.out.println("Client disconnected");
 
         } catch (IOException e) {
             System.out.println("Error:" +e.getMessage());
