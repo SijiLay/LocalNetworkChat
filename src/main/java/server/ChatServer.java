@@ -1,9 +1,6 @@
 package server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -22,6 +19,10 @@ public class ChatServer {
             Socket clientSocket = serverSocket.accept();
 
             System.out.println("client connected");
+
+            OutputStream os = clientSocket.getOutputStream();
+            PrintWriter pw = new PrintWriter(os,true);
+            pw.println("Welcome to the server!");
 
             InputStream in = clientSocket.getInputStream(); //ask for incoming data stream as raw bytes
             InputStreamReader isr = new InputStreamReader(in); //turns those bytes to character

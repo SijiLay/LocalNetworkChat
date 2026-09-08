@@ -1,8 +1,6 @@
 package client;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -18,6 +16,13 @@ public class ChatClient {
             Socket socket = new Socket(host, port); //trying to connect to server
             System.out.println("Connected to server");
 
+            InputStream is = socket.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+
+            String serverMessage = br.readLine();
+            System.out.println(serverMessage);
+
             OutputStream os = socket.getOutputStream(); //path for sending data
 
             PrintWriter pw = new PrintWriter(os, true); //easy way to send text
@@ -29,8 +34,7 @@ public class ChatClient {
                 }
                 pw.println(message);
             }
-            System.out.println("Client from server disconnected");
-            socket.close();
+            System.out.println("Disconnected from server");            socket.close();
             sc.close();
 
         } catch (IOException e) {
