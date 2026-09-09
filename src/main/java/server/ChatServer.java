@@ -16,25 +16,15 @@ public class ChatServer {
             System.out.println("Waiting for connection...");
 
             // call accept() AND save what it returns
-            Socket clientSocket = serverSocket.accept();
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
 
-            System.out.println("client connected");
+                ClientHandler clientHandler = new ClientHandler(clientSocket);
+                Thread thread = new Thread(clientHandler);
+                thread.start();
 
-            OutputStream os = clientSocket.getOutputStream();
-            PrintWriter pw = new PrintWriter(os,true);
-            pw.println("Welcome to the server!");
-
-            InputStream in = clientSocket.getInputStream(); //ask for incoming data stream as raw bytes
-            InputStreamReader isr = new InputStreamReader(in); //turns those bytes to character
-            BufferedReader br = new BufferedReader(isr); //convenient reading of text
-
-
-            String message;
-
-            while ((message = br.readLine()) != null) {
-                System.out.println(message);
+                System.out.println("Client connected");
             }
-            System.out.println("Client disconnected");
 
         } catch (IOException e) {
             System.out.println("Error:" +e.getMessage());

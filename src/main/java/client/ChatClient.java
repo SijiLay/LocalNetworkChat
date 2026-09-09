@@ -20,8 +20,9 @@ public class ChatClient {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
 
-            String serverMessage = br.readLine();
-            System.out.println(serverMessage);
+            ServerListener listener = new ServerListener(br);
+            Thread thread = new Thread(listener);
+            thread.start();
 
             OutputStream os = socket.getOutputStream(); //path for sending data
 
@@ -34,7 +35,8 @@ public class ChatClient {
                 }
                 pw.println(message);
             }
-            System.out.println("Disconnected from server");            socket.close();
+            System.out.println("Disconnected from server");
+            socket.close();
             sc.close();
 
         } catch (IOException e) {
