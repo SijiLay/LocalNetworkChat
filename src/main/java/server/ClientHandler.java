@@ -40,6 +40,7 @@ public class ClientHandler implements Runnable{
         } catch (IOException e) {
             System.out.println("Client connection error.");
         }
+        clientHandlers.remove(this);
     }
 
     public void sendMessage(String message){
