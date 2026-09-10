@@ -10,11 +10,15 @@ public class ChatClient {
         String host = "localhost";
         int port = 5000;
 
+
         try { //This being run will unblock the server and connect a client to the server
 
             Scanner sc = new Scanner(System.in); //reads keyboard import
             Socket socket = new Socket(host, port); //trying to connect to server
             System.out.println("Connected to server");
+
+            System.out.print("Enter username: ");
+            String username = sc.nextLine(); //saves the string to move to clienthandler where it saves it as the username and also called for the actuall messaging format
 
             InputStream is = socket.getInputStream(); // get bytes from server
             InputStreamReader isr = new InputStreamReader(is); //turn bytes to characters
@@ -27,6 +31,7 @@ public class ChatClient {
             OutputStream os = socket.getOutputStream(); //path for sending data
 
             PrintWriter pw = new PrintWriter(os, true); //easy way to send text
+            pw.println(username);
 
             while (true) {
                 String message = sc.nextLine(); // Wait for keyboard input

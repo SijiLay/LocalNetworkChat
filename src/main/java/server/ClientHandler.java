@@ -9,6 +9,7 @@ public class ClientHandler implements Runnable{
     private Socket socket;
     private CopyOnWriteArrayList<ClientHandler> clientHandlers;
     private PrintWriter pw;
+    private String username;
 
     public ClientHandler(Socket socket, CopyOnWriteArrayList<ClientHandler> clientHandlers){
         this.socket=socket;
@@ -21,7 +22,9 @@ public class ClientHandler implements Runnable{
             // create BufferedReader
             InputStream is = socket.getInputStream(); // Get incoming bytes from client
             InputStreamReader isr = new InputStreamReader(is); // turns those bytes into characters
-            BufferedReader br = new BufferedReader(isr); // Makes reading  text easier
+            BufferedReader br = new BufferedReader(isr); // Makes reading text easier
+
+            username = br.readLine(); //gets first incoming text from reader and saves it as the handlers username
 
             // create PrintWriter
             OutputStream os = socket.getOutputStream(); //gets path for sending data
@@ -34,7 +37,7 @@ public class ClientHandler implements Runnable{
             String message;
             while ((message = br.readLine()) != null){ //keep reading until client disconnects
                 for(ClientHandler clientHandler: clientHandlers){
-                    clientHandler.sendMessage(message);
+                    clientHandler.sendMessage(username+": "+message);
                 }
             }
         } catch (IOException e) {
