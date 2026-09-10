@@ -13,25 +13,42 @@ public class ChatClient {
 
         try { //This being run will unblock the server and connect a client to the server
 
-            Scanner sc = new Scanner(System.in); //reads keyboard import
             Socket socket = new Socket(host, port); //trying to connect to server
+            Scanner sc = new Scanner(System.in); //reads keyboard import
             System.out.println("Connected to server");
-
-            System.out.print("Enter username: ");
-            String username = sc.nextLine(); //saves the string to move to clienthandler where it saves it as the username and also called for the actuall messaging format
 
             InputStream is = socket.getInputStream(); // get bytes from server
             InputStreamReader isr = new InputStreamReader(is); //turn bytes to characters
             BufferedReader br = new BufferedReader(isr); // makes it easier to read
 
+            OutputStream os = socket.getOutputStream(); //path for sending data
+            PrintWriter pw = new PrintWriter(os, true); //easy way to send text
+
+
+            System.out.print("Enter username: ");
+            String username = sc.nextLine(); //saves the string to move to clienthandler where it saves it as the username and also called for the actuall messaging format
+            pw.println(username);
+
+            String response = br.readLine();
+            while (response.equalsIgnoreCase("Username already taken") || response.equalsIgnoreCase("Invalid username")) {
+                if(response.equalsIgnoreCase("Username already taken")){
+                    System.out.println("Username already taken, Try Again");
+                }
+                else{
+                    System.out.println("Invalid Username, Try Again");
+                }
+                System.out.print("Enter username: ");
+                username = sc.nextLine();
+                pw.println(username);
+                response = br.readLine();
+            }
+            System.out.println(response);
+
             ServerListener listener = new ServerListener(br); //creates a server-message listener
             Thread thread = new Thread(listener); //creates listener thread
             thread.start();
 
-            OutputStream os = socket.getOutputStream(); //path for sending data
 
-            PrintWriter pw = new PrintWriter(os, true); //easy way to send text
-            pw.println(username);
 
             while (true) {
                 String message = sc.nextLine(); // Wait for keyboard input
