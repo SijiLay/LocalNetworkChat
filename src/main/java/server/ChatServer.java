@@ -12,9 +12,13 @@ public class ChatServer {
         CopyOnWriteArrayList<ClientHandler> clientHandlers = new CopyOnWriteArrayList<>();
         int MAX_CLIENTS = 2;
 
+        ServerSocket serverSocket = null;
 
         try {
-            ServerSocket serverSocket = new ServerSocket(port); //Opens server to allow accepting clients on port
+            serverSocket = new ServerSocket(port); //Opens server to allow accepting clients on port
+            ServerConsole serverConsole = new ServerConsole(serverSocket,clientHandlers);
+            Thread consoleThread = new Thread(serverConsole);
+            consoleThread.start();
 
             System.out.println("server started");
             System.out.println("Waiting for connection...");
@@ -45,7 +49,12 @@ public class ChatServer {
             }
 
         } catch (IOException e) {
-            System.out.println("Error:" +e.getMessage());
+            if(serverSocket.isClosed()){
+                System.out.println("Server stopped");
+            }
+            else {
+                System.out.println("Error: " +e.getMessage());
+            }
         }
     }
 }

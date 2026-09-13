@@ -97,4 +97,11 @@ public class ClientHandler implements Runnable {
     private boolean isUsernameValid(String username) {
             return username != null && !username.isBlank() && !isUsernameTaken(username);
         }
+    public void closeConnection() {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            System.out.println("Error closing client connection.");
+        }
+    }
 }

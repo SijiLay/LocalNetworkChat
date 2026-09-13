@@ -53,7 +53,7 @@ public class ChatClient {
             }
 
 
-            ServerListener listener = new ServerListener(br); //creates a server-message listener
+            ServerListener listener = new ServerListener(br,socket); //creates a server-message listener
             Thread thread = new Thread(listener); //creates listener thread
             thread.start();
 
@@ -61,6 +61,11 @@ public class ChatClient {
 
             while (true) {
                 String message = sc.nextLine(); // Wait for keyboard input
+
+                if(socket.isClosed()){
+                    break;
+                }
+
                 if (message.equalsIgnoreCase("/quit")) {
                     break;
                 }
