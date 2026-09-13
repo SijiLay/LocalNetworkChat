@@ -2,6 +2,8 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ClientHandler implements Runnable {
@@ -10,6 +12,9 @@ public class ClientHandler implements Runnable {
     private CopyOnWriteArrayList<ClientHandler> clientHandlers;
     private PrintWriter pw;
     private String username;
+
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
+
 
     public ClientHandler(Socket socket, CopyOnWriteArrayList<ClientHandler> clientHandlers) {
         this.socket = socket;
@@ -44,9 +49,12 @@ public class ClientHandler implements Runnable {
             }
 
             pw.println("Welcome to the server");
+            String joinTime = LocalTime.now().format(FORMATTER);
 
             for (ClientHandler clientHandler : clientHandlers) {
-                clientHandler.sendMessage(username + " joined the chat");
+                if(clientHandler != this) {
+                    clientHandler.sendMessage("[" + joinTime + "] " +username + " joined the chat");
+                }
             }
 
             String message;
@@ -58,8 +66,9 @@ public class ClientHandler implements Runnable {
                     pw.println("Message cannot be over 500 characters");
                 }
                 else {
+                    String messageTime = LocalTime.now().format(FORMATTER);
                     for (ClientHandler clientHandler : clientHandlers) {
-                        clientHandler.sendMessage(username + ": " + message);
+                        clientHandler.sendMessage("[" + messageTime + "] " + username + ": " + message);
                     }
                 }
             }
@@ -72,8 +81,10 @@ public class ClientHandler implements Runnable {
 
         clientHandlers.remove(this);
 
+        String leaveTime = LocalTime.now().format(FORMATTER);
+
         for (ClientHandler clientHandler : clientHandlers) {
-            clientHandler.sendMessage(username + " left the chat");
+                clientHandler.sendMessage("[" + leaveTime + "] " + username + " left the chat");
         }
     }
 
