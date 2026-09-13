@@ -12,6 +12,7 @@ public class ClientHandler implements Runnable {
     private CopyOnWriteArrayList<ClientHandler> clientHandlers;
     private PrintWriter pw;
     private String username;
+    private boolean joined = false;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
 
@@ -30,7 +31,9 @@ public class ClientHandler implements Runnable {
             BufferedReader br = new BufferedReader(isr); // Makes reading text easier
 
             username = br.readLine(); //gets first incoming text from reader and saves it as the handlers username
-
+            if (username == null) {
+                return;
+            }
 
             // create PrintWriter
             OutputStream os = socket.getOutputStream(); //gets path for sending data
@@ -45,10 +48,13 @@ public class ClientHandler implements Runnable {
                 }
 
                 username = br.readLine();
-
+                if (username == null) {
+                    return;
+                }
             }
 
             pw.println("Welcome to the server");
+            joined = true;
             String joinTime = LocalTime.now().format(FORMATTER);
 
             for (ClientHandler clientHandler : clientHandlers) {
@@ -74,17 +80,20 @@ public class ClientHandler implements Runnable {
             }
 
 
-            // later: read client messages
         } catch (IOException e) {
             System.out.println("Client connection error.");
         }
 
-        clientHandlers.remove(this);
+        finally {
+            clientHandlers.remove(this);
 
-        String leaveTime = LocalTime.now().format(FORMATTER);
+            if(joined){
+                String leaveTime = LocalTime.now().format(FORMATTER);
 
-        for (ClientHandler clientHandler : clientHandlers) {
-                clientHandler.sendMessage("[" + leaveTime + "] " + username + " left the chat");
+                for (ClientHandler clientHandler : clientHandlers) {
+                    clientHandler.sendMessage("[" + leaveTime + "] " + username + " left the chat");
+                }
+            }
         }
     }
 
