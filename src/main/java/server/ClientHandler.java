@@ -34,14 +34,20 @@ public class ClientHandler implements Runnable {
             while (!isUsernameValid(username)) {
                 if (username == null || username.isBlank()) {
                     pw.println("Invalid username");
-                } else if (isUsernameTaken(username)) {
+                }
+                else if (isUsernameTaken(username)) {
                     pw.println("Username already taken");
                 }
 
                 username = br.readLine();
+
             }
 
             pw.println("Welcome to the server");
+
+            for (ClientHandler clientHandler : clientHandlers) {
+                clientHandler.sendMessage(username + " joined the chat");
+            }
 
             String message;
             while ((message = br.readLine()) != null) { //keep reading until client disconnects
@@ -63,7 +69,12 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             System.out.println("Client connection error.");
         }
+
         clientHandlers.remove(this);
+
+        for (ClientHandler clientHandler : clientHandlers) {
+            clientHandler.sendMessage(username + " left the chat");
+        }
     }
 
     public void sendMessage(String message) {
