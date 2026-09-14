@@ -23,8 +23,12 @@ public class ServerListener implements Runnable{
                 System.out.println(message);
             }
             System.out.println("Server disconnected.");
-            socket.close();
-            System.exit(0);
+
+            try {
+                socket.close();
+            } catch (IOException e) {
+                System.out.println("Error closing connection.");
+            }
         } catch (IOException e) {
             System.out.println("Connection to server lost.");
         }

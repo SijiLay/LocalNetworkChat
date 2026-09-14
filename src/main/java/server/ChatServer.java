@@ -6,11 +6,11 @@ import java.net.Socket;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatServer {
+    public static int MAX_CLIENTS = 2;
 
     public static void main(String[] args) {
         int port = 5000;
         CopyOnWriteArrayList<ClientHandler> clientHandlers = new CopyOnWriteArrayList<>();
-        int MAX_CLIENTS = 2;
 
         ServerSocket serverSocket = null;
 

@@ -25,9 +25,18 @@ public class ChatClient {
             PrintWriter pw = new PrintWriter(os, true); //easy way to send text
 
             String serverStatus = br.readLine();
+
+            if (serverStatus == null) {
+                System.out.println("Server disconnected.");
+                socket.close();
+                sc.close();
+                return;
+            }
+
             if(serverStatus.equalsIgnoreCase("SERVER_FULL")){
                 System.out.println("Server is full. Try again later.");
                 socket.close();
+                sc.close();
                 return;
             }
             else if (serverStatus.equalsIgnoreCase("SERVER_AVAILABLE")){
@@ -36,6 +45,13 @@ public class ChatClient {
                 pw.println(username);
 
                 String response = br.readLine();
+
+                if (response == null) {
+                    System.out.println("Server disconnected.");
+                    socket.close();
+                    sc.close();
+                    return;
+                }
 
                 while (response.equalsIgnoreCase("Username already taken") || response.equalsIgnoreCase("Invalid username")) {
                     if(response.equalsIgnoreCase("Username already taken")){
@@ -48,32 +64,60 @@ public class ChatClient {
                     username = sc.nextLine();
                     pw.println(username);
                     response = br.readLine();
+
+                    if (response == null) {
+                        System.out.println("Server disconnected.");
+                        socket.close();
+                        sc.close();
+                        return;
+                    }
                 }
                 System.out.println(response);
+            }
+            else {
+                System.out.println("Unexpected response from server.");
+                socket.close();
+                sc.close();
+                return;
             }
 
 
             ServerListener listener = new ServerListener(br,socket); //creates a server-message listener
-            Thread thread = new Thread(listener); //creates listener thread
-            thread.start();
+            Thread listenerThread = new Thread(listener); //creates listener thread
+            listenerThread.start();
 
 
 
-            while (true) {
-                String message = sc.nextLine(); // Wait for keyboard input
+            Thread inputThread = new Thread(() -> {
 
-                if(socket.isClosed()){
-                    break;
+                while (!socket.isClosed()) {
+
+                    String message = sc.nextLine();
+
+                    if (message.equalsIgnoreCase("/quit")) {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            System.out.println("Error closing connection.");
+                        }
+                        break;
+                    }
+                    pw.println(message);
                 }
+            });
 
-                if (message.equalsIgnoreCase("/quit")) {
-                    break;
-                }
-                pw.println(message);
+            inputThread.setDaemon(true);
+            inputThread.start();
+            try {
+                listenerThread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
             System.out.println("Disconnected from server");
-            socket.close(); //close server connection
-            sc.close(); //close keyboard Scanner
+
+            if (!socket.isClosed()) {
+                socket.close();
+            } //close keyboard Scanner
 
         } catch (IOException e) {
             System.out.println("Could not connect to " + host + ":" + port);
