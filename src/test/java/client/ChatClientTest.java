@@ -13,30 +13,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit/integration tests for ChatClient.
  *
  * ChatClient is a `public static void main` that hardcodes host="localhost"
- * and port=5000, reads keyboard input via a fresh `new Scanner(System.in)`,
- * and prints everything via System.out. As with ChatServerTest, that means:
- *   - System.in is redirected to a pipe we control so we can "type" input.
- *   - System.out is redirected to a buffer we can inspect.
- *   - Tests run sequentially and must not overlap ChatServerTest, since both
- *     hardcode port 5000.
+ * and port=5000, reads keyboard input from System.in, and prints through
+ * System.out.
  *
- * IMPORTANT: ServerListener.run() calls System.exit(0) when it detects a
- * *graceful* server disconnect (server closes the socket cleanly while the
- * client is idle). Running that path in-process would kill this whole test
- * JVM. So:
- *   - Every OTHER test here runs ChatClient.main() on a background thread in
- *     this JVM (safe -- an uncaught exception on that thread only kills that
- *     thread, it doesn't crash the test run).
- *   - The one test that triggers a graceful post-login disconnect
- *     (serverDisconnectAfterLoginIsHandledWithoutKillingTheProcess) launches
- *     ChatClient in a real, separate OS process instead, so its System.exit(0)
- *     only ends that subprocess.
+ * The tests redirect System.in to controlled input and System.out to a buffer
+ * so client behavior can be tested automatically.
  *
- * Two tests here (serverDisconnectsBeforeSendingInitialStatus and
- * serverDisconnectsWhileWaitingForUsernameResponse) deliberately trigger an
- * uncaught NullPointerException on the client's background thread -- that's
- * expected and will print a stack trace to stderr during the test run; it
- * does not fail the test process itself.
+ * Tests cover connection handling, server status responses, username setup,
+ * message sending and receiving, client shutdown, and server disconnects.
  */
 class ChatClientTest {
 
@@ -157,12 +141,6 @@ class ChatClientTest {
             // server hangs up immediately, before ever sending SERVER_AVAILABLE/SERVER_FULL
             server.closeClientConnection();
 
-            // KNOWN ISSUE: `serverStatus.equalsIgnoreCase(...)` is called without a
-            // null check. A null status (from a closed connection) throws an
-            // uncaught NullPointerException on the client thread instead of
-            // failing gracefully. This test only verifies the thread still
-            // terminates (rather than hanging) -- it does not claim there's a
-            // clean, user-friendly error message, because there isn't one.
             clientThread.join(2000);
             assertFalse(clientThread.isAlive(), "Client thread should terminate rather than hang");
         }
@@ -333,10 +311,7 @@ class ChatClientTest {
             // server hangs up instead of accepting or rejecting the username
             server.closeClientConnection();
 
-            // KNOWN ISSUE: the while-loop condition calls
-            // `response.equalsIgnoreCase(...)` directly on a possibly-null
-            // response, throwing an uncaught NullPointerException just like
-            // the initial-status case above.
+
             clientThread.join(2000);
             assertFalse(clientThread.isAlive(), "Client thread should terminate rather than hang");
         }
@@ -503,7 +478,8 @@ class ChatClientTest {
 
                 boolean exited = process.waitFor(5, TimeUnit.SECONDS);
                 assertTrue(exited, "Client process should exit after the server disconnects gracefully");
-                assertEquals(0, process.exitValue(), "ServerListener exits with status 0 on a graceful disconnect");
+                assertEquals(0, process.exitValue(),
+                        "Client should exit normally after a graceful server disconnect");
                 assertTrue(captured.toString().contains("Server disconnected."),
                         "Client should report that the server disconnected");
 
